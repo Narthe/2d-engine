@@ -18,9 +18,18 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="res_path.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cleanup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

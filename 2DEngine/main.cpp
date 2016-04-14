@@ -3,13 +3,23 @@
 #include <vector>
 #include <SDL2/SDL.h>
 #include "res_path.h"
+#include "TextureManager.h"
+#include "cleanup.h"
 
 SDL_Window * SDL_WINDOW;
 SDL_Renderer * SDL_RENDERER;
+TextureManager * TEXTURE_MGR;
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 480;
+//We'll just be using square tiles for now
+const int TILE_SIZE = 40;
 
-SDL_Surface* LoadBitmap(const std::string _path);
-SDL_Texture * LoadTexture(SDL_Surface * _surf);
 void paint(std::vector<SDL_Texture*> _textures);
+
+void initManagers()
+{
+	TEXTURE_MGR = new TextureManager();
+}
 
 int main(int argc, char** argv)
 {
@@ -20,7 +30,7 @@ int main(int argc, char** argv)
 	}
 
 	/* init window */
-	SDL_WINDOW = SDL_CreateWindow("Hello World!", 100, 100, 640, 480, SDL_WINDOW_SHOWN);
+	SDL_WINDOW = SDL_CreateWindow("Hello World!", 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	if (SDL_WINDOW == NULL) {
 		std::cout << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
 		SDL_Quit();
@@ -36,44 +46,51 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	std::string imagePath = getResourcePath("Bitmaps") + "hello.bmp";
+	const std::string resPath = getResourcePath("Bitmaps");
+	SDL_Texture *background = TEXTURE_MGR->LoadTexture(resPath + "background.bmp", SDL_RENDERER);
+		SDL_Texture *image = TEXTURE_MGR->LoadTexture(resPath + "image.bmp", SDL_RENDERER);
+	if (background == NULL || image == NULL) {
+		cleanup(background, SDL_RENDERER, SDL_WINDOW);
+		SDL_Quit();
+		return 1;
+	}
+	
 	std::vector<SDL_Texture*> textures;
-
-	SDL_Surface *bmp = LoadBitmap(imagePath);
-	SDL_Texture *tex = LoadTexture(bmp);
-	textures.push_back(tex);
+	//textures.push_back(image);
+	textures.push_back(background);
 	while (true)
 	{
-		paint(textures);
+		/*Render background*/
+		int bW, bH;
+		SDL_QueryTexture(background, NULL, NULL, &bW, &bH);
+		TEXTURE_MGR->RenderTexture(background, SDL_RENDERER, 0, 0);
+		TEXTURE_MGR->RenderTexture(background, SDL_RENDERER, bW, 0);
+		TEXTURE_MGR->RenderTexture(background, SDL_RENDERER, 0, bH);
+		TEXTURE_MGR->RenderTexture(background, SDL_RENDERER, bW, bH);
+
+		int iW, iH;
+		SDL_QueryTexture(image, NULL, NULL, &iW, &iH);
+		int x = SCREEN_WIDTH / 2 - iW / 2;
+		int y = SCREEN_HEIGHT / 2 - iH / 2;
+		TEXTURE_MGR->RenderTexture(image, SDL_RENDERER, x, y);
+
+		SDL_RenderPresent(SDL_RENDERER);
+		SDL_Delay(1000);
+
+		SDL_RenderPresent(SDL_RENDERER);
+		SDL_Delay(1000);
+
+		SDL_RenderPresent(SDL_RENDERER);
+		SDL_Delay(1000);
 	}
+	for each (SDL_Texture* tex in textures)
+	{
+		cleanup(tex);
+	}
+	cleanup(SDL_WINDOW, SDL_RENDERER);
 	SDL_Quit();
 
 	return 0;
-}
-
-SDL_Surface* LoadBitmap(const std::string _path)
-{
-	SDL_Surface * surface = SDL_LoadBMP(_path.c_str());
-	if (surface == NULL) {
-		SDL_DestroyRenderer(SDL_RENDERER);
-		SDL_DestroyWindow(SDL_WINDOW);
-		std::cout << "SDL_LoadBMP Error: " << SDL_GetError() << std::endl;
-		SDL_Quit();
-	}
-	return surface;
-}
-
-SDL_Texture * LoadTexture(SDL_Surface * _surf)
-{
-	SDL_Texture *tex = SDL_CreateTextureFromSurface(SDL_RENDERER, _surf);
-	SDL_FreeSurface(_surf);
-	if (tex == NULL) {
-		SDL_DestroyRenderer(SDL_RENDERER);
-		SDL_DestroyWindow(SDL_WINDOW);
-		std::cout << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << std::endl;
-		SDL_Quit();
-	}
-	return tex;
 }
 
 void paint(std::vector<SDL_Texture*> _textures)
