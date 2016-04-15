@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <SDL2/SDL.h>
+#include "SDL2/SDL_image.h"
 #include "res_path.h"
 #include "TextureManager.h"
 #include "cleanup.h"
@@ -47,8 +48,8 @@ int main(int argc, char** argv)
 	}
 
 	const std::string resPath = getResourcePath("Bitmaps");
-	SDL_Texture *background = TEXTURE_MGR->LoadTexture(resPath + "background.bmp", SDL_RENDERER);
-		SDL_Texture *image = TEXTURE_MGR->LoadTexture(resPath + "image.bmp", SDL_RENDERER);
+	SDL_Texture *background = TEXTURE_MGR->LoadTexture(resPath + "background.png", SDL_RENDERER);
+		SDL_Texture *image = TEXTURE_MGR->LoadTexture(resPath + "image.png", SDL_RENDERER);
 	if (background == NULL || image == NULL) {
 		cleanup(background, SDL_RENDERER, SDL_WINDOW);
 		SDL_Quit();
@@ -58,6 +59,13 @@ int main(int argc, char** argv)
 	std::vector<SDL_Texture*> textures;
 	//textures.push_back(image);
 	textures.push_back(background);
+	
+	
+	if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
+		std::cout << "IMG_Init Error: " << SDL_GetError() << std::endl;
+		SDL_Quit();
+		return 1;
+	}
 	while (true)
 	{
 		/*Render background*/
